@@ -2,18 +2,17 @@ FROM alpine:3.3
 
 MAINTAINER Michael Lopez <michael@weahead.se>
 
-ENV NGINX_VERSION=1.9.11\
-    ENVPLATE_VERSION=0.0.8\
-    SSL_CERTIFICATE=/certs/fullchain.pem\
-    SSL_PRIVKEY=/certs/privkey.pem\
-    SSL_DHPARAM=/certs/dhparams.pem
+ARG NGINX_VERSION
 
 RUN \
-  build_pkgs="build-base linux-headers openssl-dev pcre-dev wget zlib-dev" && \
+  build_pkgs="gnupg build-base linux-headers openssl-dev pcre-dev wget zlib-dev" && \
   runtime_pkgs="ca-certificates openssl pcre zlib" && \
-  apk --update add ${build_pkgs} ${runtime_pkgs} && \
+  apk --no-cache add ${build_pkgs} ${runtime_pkgs} && \
   cd /tmp && \
   wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && \
+  wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz.asc && \
+  gpg --keyserver pgpkeys.mit.edu --recv-key A1C052F8 && \
+  gpg nginx-${NGINX_VERSION}.tar.gz.asc && \
   tar xzf nginx-${NGINX_VERSION}.tar.gz && \
   cd /tmp/nginx-${NGINX_VERSION} && \
   ./configure \
@@ -57,20 +56,12 @@ RUN \
 
 ADD root /
 
-RUN chown -R nobody:nobody /etc/nginx
-
-RUN apk add --update curl && \
-    curl -sLo /usr/local/bin/ep https://github.com/kreuzwerker/envplate/releases/download/v${ENVPLATE_VERSION}/ep-linux && \
-    chmod +x /usr/local/bin/ep && \
-		echo "8215879616db086445e00df94156e6b0b0286b51 */usr/local/bin/ep" | \
-		sha1sum -c - && \
-		apk del curl && \
-    rm -rf /var/cache/apk/*
+RUN chown -R nobody:nobody /etc/nginx /usr/local/etc/nginx
 
 EXPOSE 8080 8443
 
 USER nobody
 
-WORKDIR /etc/nginx
+WORKDIR /usr/local/etc/nginx
 
-CMD [ "/usr/local/bin/ep", "-v", "/etc/nginx/*.conf", "/etc/nginx/conf.d/*.conf", "--", "/usr/sbin/nginx", "-c", "/etc/nginx/nginx.conf" ]
+CMD [ "/usr/sbin/nginx" ]
