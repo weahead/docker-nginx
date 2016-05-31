@@ -1,6 +1,6 @@
 FROM alpine:3.3
 
-MAINTAINER Michael Lopez <michael@weahead.se>
+MAINTAINER We ahead <docker@weahead.se>
 
 # Enable when Docker Hub supports build args.
 # ARG NGINX_VERSION
