@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 NGINX_VERSION=1.9.15
 
