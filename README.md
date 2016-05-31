@@ -11,7 +11,7 @@ This is We ahead's dockerized nginx.
 - A few global default configuration options
 - Runs nginx unprivileged via user `nobody` and group `nobody`.
   - Exposes 8080 and 8443
-- Includes additional configuration files form `/etc/nginx/conf.d/*.conf` 
+- Includes additional configuration files form `/usr/local/etc/nginx/conf.d/*.conf` 
 
 
 ## Configuration options used during compilation
