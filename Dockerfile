@@ -4,7 +4,7 @@ MAINTAINER We ahead <docker@weahead.se>
 
 # Enable when Docker Hub supports build args.
 # ARG NGINX_VERSION
-ENV NGINX_VERSION=1.9.15\
+ENV NGINX_VERSION=1.10.1\
     S6_VERSION=1.17.2.0\
     S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
@@ -20,7 +20,7 @@ RUN build_pkgs="gnupg build-base linux-headers openssl-dev pcre-dev curl zlib-de
     && tar -xzf /tmp/s6-overlay-amd64.tar.gz -C / \
     && curl -OL "http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" \
     && curl -OL "http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz.asc" \
-    && gpg --keyserver pgpkeys.mit.edu --recv-key A1C052F8 \
+    && gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "B0F4253373F8F6F510D42178520A9993A1C052F8" \
     && gpg --batch --verify /tmp/nginx-${NGINX_VERSION}.tar.gz.asc nginx-${NGINX_VERSION}.tar.gz \
     && tar -xzf nginx-${NGINX_VERSION}.tar.gz \
     && cd /tmp/nginx-${NGINX_VERSION} \
