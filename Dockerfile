@@ -4,26 +4,45 @@ MAINTAINER We ahead <docker@weahead.se>
 
 # Enable when Docker Hub supports build args.
 # ARG NGINX_VERSION
-ENV NGINX_VERSION=1.10.1\
-    S6_VERSION=1.17.2.0\
+ENV NGINX_VERSION=1.11.3\
+    S6_VERSION=1.18.1.5\
     S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
-RUN build_pkgs="gnupg build-base linux-headers openssl-dev pcre-dev curl zlib-dev" \
-    && runtime_pkgs="ca-certificates openssl pcre zlib" \
-    && apk --no-cache add ${build_pkgs} ${runtime_pkgs} \
-    && cd /tmp \
+RUN apk --no-cache add dnsmasq \
+    && apk --no-cache add --virtual build-pkgs libcap \
+    && setcap cap_net_admin,cap_net_bind_service+ep /usr/sbin/dnsmasq \
+    && apk del build-pkgs
+
+RUN apk --no-cache add --virtual build-pkgs curl gnupg \
     && curl -OL "https://github.com/just-containers/s6-overlay/releases/download/v${S6_VERSION}/s6-overlay-amd64.tar.gz" \
     && curl -OL "https://github.com/just-containers/s6-overlay/releases/download/v${S6_VERSION}/s6-overlay-amd64.tar.gz.sig" \
     && export GNUPGHOME="$(mktemp -d)" \
-    && gpg --keyserver pgp.mit.edu --recv-key 0x337EE704693C17EF \
-    && gpg --batch --verify /tmp/s6-overlay-amd64.tar.gz.sig /tmp/s6-overlay-amd64.tar.gz \
-    && tar -xzf /tmp/s6-overlay-amd64.tar.gz -C / \
+    && curl https://keybase.io/justcontainers/key.asc | gpg --import \
+    && gpg --verify s6-overlay-amd64.tar.gz.sig s6-overlay-amd64.tar.gz \
+    && tar -xzf s6-overlay-amd64.tar.gz -C / \
+    && rm -rf "$GNUPGHOME" \
+    && apk del build-pkgs
+
+RUN apk --no-cache add --virtual build-pkgs \
+      curl \
+      gnupg \
+      build-base \
+      linux-headers \
+      openssl-dev \
+      pcre-dev \
+      zlib-dev \
+    && apk --no-cache add --virtual runtime-pkgs \
+      ca-certificates \
+      openssl \
+      pcre \
+      zlib \
     && curl -OL "http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" \
     && curl -OL "http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz.asc" \
+    && export GNUPGHOME="$(mktemp -d)" \
     && gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "B0F4253373F8F6F510D42178520A9993A1C052F8" \
-    && gpg --batch --verify /tmp/nginx-${NGINX_VERSION}.tar.gz.asc nginx-${NGINX_VERSION}.tar.gz \
+    && gpg --batch --verify nginx-${NGINX_VERSION}.tar.gz.asc nginx-${NGINX_VERSION}.tar.gz \
     && tar -xzf nginx-${NGINX_VERSION}.tar.gz \
-    && cd /tmp/nginx-${NGINX_VERSION} \
+    && cd nginx-${NGINX_VERSION} \
     && ./configure \
       --prefix=/etc/nginx \
       --sbin-path=/usr/sbin/nginx \
@@ -59,13 +78,12 @@ RUN build_pkgs="gnupg build-base linux-headers openssl-dev pcre-dev curl zlib-de
       --without-mail_smtp_module \
     && make \
     && make install \
-    && rm -rf "$GNUPGHOME" /tmp/* \
-    && apk del ${build_pkgs}
+    && rm -rf "$GNUPGHOME" \
+    && apk del build-pkgs \
+    && ln -sf /dev/stdout /tmp/access.log \
+    && ln -sf /dev/stderr /tmp/error.log
 
 ADD root /
-
-RUN ln -sf /dev/stdout /tmp/access.log \
-    && ln -sf /dev/stderr /tmp/error.log
 
 RUN chown -R nobody:nobody /etc/nginx /usr/local/etc/nginx /tmp/access.log /tmp/error.log
 
