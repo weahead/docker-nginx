@@ -1,6 +1,6 @@
 # nginx in a container
 
-[![Nginx 1.10.1](https://img.shields.io/badge/nginx-1.10.1-green.svg)](https://github.com/nginx/nginx/releases/tag/release-1.10.1)
+[![Nginx 1.11.3](https://img.shields.io/badge/nginx-1.11.3-green.svg)](https://github.com/nginx/nginx/releases/tag/release-1.11.3)
 
 This is We ahead's dockerized nginx.
 
@@ -17,8 +17,7 @@ This is We ahead's dockerized nginx.
 ## Configuration options used during compilation
 
 ```sh
-nginx -V
-nginx version: nginx/1.10.1
+nginx version: nginx/1.11.3
 built by gcc 5.3.0 (Alpine 5.3.0)
 built with OpenSSL 1.0.2h  3 May 2016
 TLS SNI support enabled
