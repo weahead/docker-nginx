@@ -20,7 +20,7 @@ RUN apk --no-cache add --virtual build-pkgs curl gnupg \
     && curl https://keybase.io/justcontainers/key.asc | gpg --import \
     && gpg --verify s6-overlay-amd64.tar.gz.sig s6-overlay-amd64.tar.gz \
     && tar -xzf s6-overlay-amd64.tar.gz -C / \
-    && rm -rf "$GNUPGHOME" \
+    && rm -rf "$GNUPGHOME" "s6-overlay-amd64.tar.gz" "s6-overlay-amd64.tar.gz.sig" \
     && apk del build-pkgs
 
 RUN apk --no-cache add --virtual build-pkgs \
@@ -78,7 +78,8 @@ RUN apk --no-cache add --virtual build-pkgs \
       --without-mail_smtp_module \
     && make \
     && make install \
-    && rm -rf "$GNUPGHOME" \
+    && cd - \
+    && rm -rf "$GNUPGHOME" "nginx-${NGINX_VERSION}.tar.gz" "nginx-${NGINX_VERSION}.tar.gz.asc" "nginx-${NGINX_VERSION}" \
     && apk del build-pkgs \
     && ln -sf /dev/stdout /tmp/access.log \
     && ln -sf /dev/stderr /tmp/error.log
